@@ -13,7 +13,7 @@ npm install react-hook-form
 npm install uuid
 npm install web-vitals
 
-Tailwind Plugins (if used)
+Tailwind Plugins
 npm install -D @tailwindcss/forms @tailwindcss/typography
 
 4. Install Backend Dependencies
