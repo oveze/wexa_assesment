@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuthStore } from '../store/authStore';
@@ -10,6 +9,7 @@ export default function KBPage() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState(hasRole(['admin']) ? 'all' : 'published'); // 👈 default
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingArticle, setEditingArticle] = useState(null);
   const [error, setError] = useState('');
@@ -18,17 +18,19 @@ export default function KBPage() {
 
   useEffect(() => {
     fetchArticles();
-  }, []);
+  }, [filterStatus]); // 👈 refetch when status changes
 
   const fetchArticles = async (query = '') => {
     try {
       setLoading(true);
-      const params = query ? { query } : {};
-      // For admins, show all articles including drafts
-      if (hasRole(['admin'])) {
-        params.status = undefined; // Remove status filter for admins
+      const params = {};
+      if (query) params.query = query;
+
+      // Only add status if not "all"
+      if (filterStatus !== 'all') {
+        params.status = filterStatus;
       }
-      
+
       const response = await api.get('/kb', { params });
       setArticles(response.data);
     } catch (error) {
@@ -55,7 +57,6 @@ export default function KBPage() {
         await api.post('/kb', articleData);
       }
 
-      // Reset form and refresh articles
       reset();
       setShowCreateForm(false);
       setEditingArticle(null);
@@ -121,7 +122,7 @@ export default function KBPage() {
             <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
               <button
                 onClick={() => setShowCreateForm(true)}
-                className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto"
+                className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
               >
                 Add Article
               </button>
@@ -129,7 +130,7 @@ export default function KBPage() {
           )}
         </div>
 
-        {/* Search */}
+        {/* Search + Filter */}
         <div className="mt-8">
           <form onSubmit={handleSearch} className="flex gap-4 mb-6">
             <div className="flex-1">
@@ -138,12 +139,12 @@ export default function KBPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search articles..."
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
             <button
               type="submit"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-4 py-2 rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
             >
               Search
             </button>
@@ -153,10 +154,23 @@ export default function KBPage() {
                 setSearchTerm('');
                 fetchArticles();
               }}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-4 py-2 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
             >
               Clear
             </button>
+
+            {/* Status Filter (Admins only) */}
+            {hasRole(['admin']) && (
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
+              >
+                <option value="all">All</option>
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+              </select>
+            )}
           </form>
         </div>
 
@@ -170,56 +184,42 @@ export default function KBPage() {
             </div>
             <form onSubmit={handleSubmit(onSubmitArticle)} className="px-6 py-4 space-y-4">
               <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                  Title *
-                </label>
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title *</label>
                 <input
                   {...register('title', { required: 'Title is required' })}
                   type="text"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm"
                   placeholder="Article title"
                 />
-                {errors.title && (
-                  <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
-                )}
+                {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
               </div>
 
               <div>
-                <label htmlFor="body" className="block text-sm font-medium text-gray-700">
-                  Content *
-                </label>
+                <label htmlFor="body" className="block text-sm font-medium text-gray-700">Content *</label>
                 <textarea
                   {...register('body', { required: 'Content is required' })}
                   rows={8}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm"
                   placeholder="Article content..."
                 />
-                {errors.body && (
-                  <p className="mt-1 text-sm text-red-600">{errors.body.message}</p>
-                )}
+                {errors.body && <p className="mt-1 text-sm text-red-600">{errors.body.message}</p>}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="tags" className="block text-sm font-medium text-gray-700">
-                    Tags
-                  </label>
+                  <label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags</label>
                   <input
                     {...register('tags')}
                     type="text"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="billing, tech, shipping (comma separated)"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm"
+                    placeholder="billing, tech, shipping"
                   />
-                  <p className="mt-1 text-sm text-gray-500">Separate tags with commas</p>
                 </div>
-
                 <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-                    Status
-                  </label>
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
                   <select
                     {...register('status')}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm"
                   >
                     <option value="draft">Draft</option>
                     <option value="published">Published</option>
@@ -227,21 +227,19 @@ export default function KBPage() {
                 </div>
               </div>
 
-              {error && (
-                <div className="text-sm text-red-600">{error}</div>
-              )}
+              {error && <div className="text-sm text-red-600">{error}</div>}
 
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="px-4 py-2 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white border border-gray-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="px-4 py-2 rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                 >
                   {editingArticle ? 'Update Article' : 'Create Article'}
                 </button>
@@ -257,16 +255,13 @@ export default function KBPage() {
               Articles ({articles.length})
             </h3>
           </div>
-          
           {loading ? (
             <div className="px-6 py-12 text-center">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : articles.length === 0 ? (
             <div className="px-6 py-12 text-center">
-              <p className="text-gray-500">
-                {searchTerm ? 'No articles found matching your search.' : 'No articles available.'}
-              </p>
+              <p className="text-gray-500">{searchTerm ? 'No articles found.' : 'No articles available.'}</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
@@ -275,56 +270,33 @@ export default function KBPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-3">
-                        <h4 className="text-lg font-medium text-gray-900 truncate">
-                          {article.title}
-                        </h4>
+                        <h4 className="text-lg font-medium text-gray-900 truncate">{article.title}</h4>
                         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          article.status === 'published' 
-                            ? 'bg-green-100 text-green-800' 
+                          article.status === 'published'
+                            ? 'bg-green-100 text-green-800'
                             : 'bg-yellow-100 text-yellow-800'
                         }`}>
                           {article.status}
                         </span>
                       </div>
-                      
-                      <p className="mt-1 text-sm text-gray-600 line-clamp-2">
-                        {article.body.substring(0, 200)}...
-                      </p>
-                      
-                      {article.tags && article.tags.length > 0 && (
+                      <p className="mt-1 text-sm text-gray-600 line-clamp-2">{article.body.substring(0, 200)}...</p>
+                      {article.tags?.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1">
-                          {article.tags.map((tag, index) => (
-                            <span
-                              key={index}
-                              className="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded"
-                            >
+                          {article.tags.map((tag, idx) => (
+                            <span key={idx} className="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">
                               {tag}
                             </span>
                           ))}
                         </div>
                       )}
-                      
                       <div className="mt-2 text-xs text-gray-500">
                         Updated {new Date(article.updatedAt).toLocaleDateString()}
                       </div>
                     </div>
-                    
                     {hasRole(['admin']) && (
-                      <div className="flex-shrink-0 ml-4">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleEdit(article)}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(article._id)}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium"
-                          >
-                            Delete
-                          </button>
-                        </div>
+                      <div className="flex-shrink-0 ml-4 flex space-x-2">
+                        <button onClick={() => handleEdit(article)} className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+                        <button onClick={() => handleDelete(article._id)} className="text-red-600 hover:text-red-800 text-sm">Delete</button>
                       </div>
                     )}
                   </div>
@@ -333,8 +305,6 @@ export default function KBPage() {
             </div>
           )}
         </div>
-
-        {/* Article Preview Modal would go here if needed */}
       </div>
     </Layout>
   );
