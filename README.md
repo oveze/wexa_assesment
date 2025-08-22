@@ -1,12 +1,37 @@
-# React + Vite
+Project Setup 🚀
+1. Clone or Download the Project
+git clone <your-repo-url>
+cd <your-project-folder>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+2. Initialize Project
+npm init -y
 
-Currently, two official plugins are available:
+3. Install Frontend Dependencies
+npm install lucide-react
+npm install zustand
+npm install react-hook-form
+npm install uuid
+npm install web-vitals
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Tailwind Plugins (if used)
+npm install -D @tailwindcss/forms @tailwindcss/typography
 
-## Expanding the ESLint configuration
+4. Install Backend Dependencies
+npm install express mongoose dotenv axios cors
+npm install express@4
+npm install bcrypt
+npm install socket.io
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+5. Environment Setup
+
+Create a .env file in the backend root folder and add your MongoDB connection string:
+
+MONGO_URI=your_mongodb_connection_url
+PORT=5000
+
+6. Running the Project
+Backend
+nodemon server.js
+
+Frontend
+npm run dev
