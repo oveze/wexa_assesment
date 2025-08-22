@@ -36,15 +36,15 @@ git clone <your-repo-url>
 
 5. Environment Setup
 
-Create a .env file in the backend root folder and add your MongoDB connection string:
+   Create a .env file in the backend root folder and add your MongoDB connection string:
 
-MONGO_URI=your_mongodb_connection_url
+   MONGO_URI=your_mongodb_connection_url
  
- PORT=5000
+    PORT=5000
 
 6. Running the Project
-Backend
-nodemon server.js
+   Backend
+   nodemon server.js
 
 Frontend
-npm run dev
+   npm run dev
