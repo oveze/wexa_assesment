@@ -6,7 +6,7 @@ git clone <your-repo-url>
 
 2. Initialize Project
  
-  npm init -y
+      npm init -y
 
 3. Install Frontend Dependencies
  
