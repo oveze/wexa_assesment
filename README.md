@@ -24,6 +24,7 @@ Tailwind Plugins
  npm install -D @tailwindcss/forms @tailwindcss/typography
 
 4. Install Backend Dependencies
+
  npm install express mongoose dotenv axios cors  
  npm install express@4 
   
