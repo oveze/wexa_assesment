@@ -1,8 +1,8 @@
 Project Setup 🚀
 1. Clone or Download the Project
 git clone <your-repo-url>
- 
- cd <your-project-folder>
+cd <your-project-folder>
+
 
 2. Initialize Project
  
