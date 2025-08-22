@@ -4,7 +4,9 @@ git clone <your-repo-url>
  
  cd <your-project-folder>
 2. Initialize Project
+ 
  npm init -y
+
 3. Install Frontend Dependencies
  
  npm install lucide-react
