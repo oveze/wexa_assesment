@@ -27,8 +27,11 @@ Tailwind Plugins
 4. Install Backend Dependencies
 
   npm install express mongoose dotenv axios cors  
+  
   npm install express@4 
+  
   npm install bcrypt 
+  
   npm install socket.io 
 
 5. Environment Setup
