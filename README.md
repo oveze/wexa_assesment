@@ -10,19 +10,19 @@ git clone <your-repo-url>
 
 3. Install Frontend Dependencies
  
-  npm install lucide-react
+      npm install lucide-react
  
-  npm install zustand
+     npm install zustand
  
-  npm install react-hook-form
+     npm install react-hook-form
  
-  npm install uuid
+     npm install uuid
  
-  npm install web-vitals
+     npm install web-vitals
 
 Tailwind Plugins
  
-  npm install -D @tailwindcss/forms @tailwindcss/typography
+   npm install -D @tailwindcss/forms @tailwindcss/typography
 
 4. Install Backend Dependencies
 
